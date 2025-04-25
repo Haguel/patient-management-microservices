@@ -11,7 +11,5 @@ public abstract class PatientMapper {
     public abstract PatientResponseDTO patientToPatientResponseDTO(Patient patient);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "registeredDate", expression = "java(java.time.LocalDate.parse(patientRequestDTO.getRegisteredDate()))")
-    @Mapping(target = "dateOfBirth", expression = "java(java.time.LocalDate.parse(patientRequestDTO.getDateOfBirth()))")
     public abstract Patient patientRequestDTOToPatient(PatientRequestDTO patientRequestDTO);
 }

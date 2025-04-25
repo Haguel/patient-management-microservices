@@ -27,4 +27,20 @@ public class Patient {
 
     @Column
     private LocalDate registeredDate;
+
+    public void setDateOfBirth(String dateOfBirth) {
+        this.dateOfBirth = LocalDate.parse(dateOfBirth);
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public void setRegisteredDate(String registeredDate) {
+        this.registeredDate = LocalDate.parse(registeredDate);
+    }
+
+    public void setRegisteredDate(LocalDate registeredDate) {
+        this.registeredDate = registeredDate;
+    }
 }
