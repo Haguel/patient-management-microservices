@@ -1,5 +1,6 @@
 package dev.haguel.patientservice.service;
 
+import dev.haguel.patientservice.dto.PatientRequestDTO;
 import dev.haguel.patientservice.dto.PatientResponseDTO;
 import dev.haguel.patientservice.entity.Patient;
 import dev.haguel.patientservice.mapper.PatientMapper;
@@ -23,5 +24,12 @@ public class PatientService {
                 .toList();
 
         return patientResponseDTOs;
+    }
+
+    public PatientResponseDTO createPatient(PatientRequestDTO patientRequestDTO) {
+        Patient mappedPatient = patientMapper.patientRequestDTOToPatient(patientRequestDTO);
+        Patient patient = patientRepository.save(mappedPatient);
+
+        return patientMapper.patientToPatientResponseDTO(patient);
     }
 }
