@@ -49,4 +49,12 @@ public class PatientController {
         return ResponseEntity.ok().body(updatedPatient);
     }
 
+    @DeleteMapping(EndPoints.Patient.DELETE_PATIENT + "/{id}")
+    public ResponseEntity<Void> deletePatient(@PathVariable UUID id) {
+        log.info("Delete patient request received");
+        patientService.deletePatient(id);
+
+        log.info("Delete patient request completed");
+        return ResponseEntity.ok().build();
+    }
 }
