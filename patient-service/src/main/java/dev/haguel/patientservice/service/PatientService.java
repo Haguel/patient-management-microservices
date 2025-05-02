@@ -5,6 +5,7 @@ import dev.haguel.patientservice.dto.PatientResponseDTO;
 import dev.haguel.patientservice.entity.Patient;
 import dev.haguel.patientservice.exception.EmailAlreadyExistsException;
 import dev.haguel.patientservice.exception.PatientNotFoundException;
+import dev.haguel.patientservice.grpc.BillingServiceGrpcClient;
 import dev.haguel.patientservice.mapper.PatientMapper;
 import dev.haguel.patientservice.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PatientService {
     private final PatientRepository patientRepository;
+    private final BillingServiceGrpcClient billingServiceGrpcClient;
     private final PatientMapper patientMapper;
 
     public List<PatientResponseDTO> getPatients() {
@@ -38,6 +40,8 @@ public class PatientService {
 
         Patient mappedPatient = patientMapper.patientRequestDTOToPatient(patientRequestDTO);
         Patient patient = patientRepository.save(mappedPatient);
+
+        billingServiceGrpcClient.createBillingAccount(patient.getId().toString(), patient.getName(), patient.getEmail());
 
         return patientMapper.patientToPatientResponseDTO(patient);
     }
