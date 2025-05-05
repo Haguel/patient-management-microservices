@@ -6,6 +6,7 @@ import dev.haguel.patientservice.entity.Patient;
 import dev.haguel.patientservice.exception.EmailAlreadyExistsException;
 import dev.haguel.patientservice.exception.PatientNotFoundException;
 import dev.haguel.patientservice.grpc.BillingServiceGrpcClient;
+import dev.haguel.patientservice.kafka.KafkaProducer;
 import dev.haguel.patientservice.mapper.PatientMapper;
 import dev.haguel.patientservice.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class PatientService {
     private final PatientRepository patientRepository;
     private final BillingServiceGrpcClient billingServiceGrpcClient;
     private final PatientMapper patientMapper;
+    private final KafkaProducer kafkaProducer;
 
     public List<PatientResponseDTO> getPatients() {
         List<Patient> patients = patientRepository.findAll();
@@ -42,6 +44,8 @@ public class PatientService {
         Patient patient = patientRepository.save(mappedPatient);
 
         billingServiceGrpcClient.createBillingAccount(patient.getId().toString(), patient.getName(), patient.getEmail());
+
+        kafkaProducer.sendEvent(patient);
 
         return patientMapper.patientToPatientResponseDTO(patient);
     }
