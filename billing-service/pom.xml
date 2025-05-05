@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>dev.haguel</groupId>
-    <artifactId>billing_service</artifactId>
+    <artifactId>billing-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>billing_service</name>
     <description>billing_service</description>
