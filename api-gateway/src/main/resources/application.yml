@@ -5,6 +5,9 @@ spring:
   cloud:
     gateway:
       routes:
+
+        ## SERVICES
+
         ## http://localhost:4004/api/patients/** -> http://patient-service:4000/patients/**
         - id: patient-service-route
           uri: http://patient-service:4000
@@ -14,6 +17,16 @@ spring:
             - StripPrefix=1
             - JwtValidation
 
+        ## http://localhost:4004/api/auth/** -> http://auth-service:4005/auth/**
+        - id: auth-service-route
+          uri: http://auth-service:4005
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1
+
+        ## DOCX
+
         ## http://localhost:4004/api-docs/patients -> http://patient-service:4000/v3/api-docs
         - id: api-docx-patient-route
           uri: http://patient-service:4000
@@ -22,10 +35,10 @@ spring:
           filters:
             - RewritePath=/api-docs/patients, /v3/api-docs
 
-        ## http://localhost:4004/api/auth/** -> http://auth-service:4005/auth/**
-        - id: auth-service-route
+        ## http://localhost:4004/api-docs/auth -> http://auth-service:4005/v3/api-docs
+        - id: api-docx-auth-route
           uri: http://auth-service:4005
           predicates:
-            - Path=/api/auth/**
+            - Path=/api-docs/auth
           filters:
-            - StripPrefix=1
+            - RewritePath=/api-docs/auth, /v3/api-docs
