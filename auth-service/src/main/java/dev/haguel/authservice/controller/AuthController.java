@@ -8,9 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,4 +26,18 @@ public class AuthController {
 
         return ResponseEntity.ok(LoginResponseDTO.builder().token(token).build());
     }
+
+    @Operation(summary = "Validate token")
+    @GetMapping(EndPoints.Auth.VALIDATE_TOKEN)
+    public ResponseEntity<Void> validateToken(@RequestHeader("Authorization") String authHeader) {
+        if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String token = authHeader.substring(7);
+        return authService.validateToken(token)
+                ? ResponseEntity.ok().build()
+                : ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
 }
