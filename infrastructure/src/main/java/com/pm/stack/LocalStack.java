@@ -1,10 +1,9 @@
 package com.pm.stack;
 
 import software.amazon.awscdk.*;
-import software.amazon.awscdk.services.ec2.InstanceClass;
-import software.amazon.awscdk.services.ec2.InstanceSize;
+import software.amazon.awscdk.services.ec2.*;
 import software.amazon.awscdk.services.ec2.InstanceType;
-import software.amazon.awscdk.services.ec2.Vpc;
+import software.amazon.awscdk.services.msk.CfnCluster;
 import software.amazon.awscdk.services.rds.*;
 import software.amazon.awscdk.services.route53.CfnHealthCheck;
 
@@ -33,7 +32,7 @@ public class LocalStack extends Stack {
                 .removalPolicy(RemovalPolicy.DESTROY)
                 .build();
     }
-
+    
     private CfnHealthCheck cfnHealthCheck(DatabaseInstance db, String id) {
         return CfnHealthCheck.Builder
                 .create(this, id)
@@ -47,6 +46,22 @@ public class LocalStack extends Stack {
                 .build();
     }
 
+    private CfnCluster createMskCluster() {
+        return CfnCluster.Builder
+                .create(this, "MskCluster")
+                .clusterName("kafka-cluster")
+                .kafkaVersion("2.8.0")
+                .numberOfBrokerNodes(1)
+                .brokerNodeGroupInfo(CfnCluster.BrokerNodeGroupInfoProperty.builder()
+                        .instanceType("kafka.m5.xlarge")
+                        .clientSubnets(vpc.getPrivateSubnets().stream()
+                                .map(ISubnet::getSubnetId)
+                                .toList())
+                        .brokerAzDistribution("DEFAULT")
+                        .build())
+                .build();
+    }
+
     public LocalStack(final App scope, final String id, final StackProps props) {
         super(scope, id, props);
 
@@ -56,6 +71,7 @@ public class LocalStack extends Stack {
         DatabaseInstance patientServiceDb = createDatabase("PatientServiceDb", "patient-service-db");
         CfnHealthCheck authDbHealthCheck = cfnHealthCheck(authServiceDb, "AuthServiceDBHealthCheck");
         CfnHealthCheck patientDbHealthCheck = cfnHealthCheck(patientServiceDb, "PatientServiceDBHealthCheck");
+        CfnCluster mskCluster = createMskCluster();
     }
 
     public static void main(final String[] args) {
