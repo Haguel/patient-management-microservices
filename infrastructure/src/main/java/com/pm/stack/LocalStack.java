@@ -3,12 +3,15 @@ package com.pm.stack;
 import software.amazon.awscdk.*;
 import software.amazon.awscdk.services.ec2.*;
 import software.amazon.awscdk.services.ec2.InstanceType;
+import software.amazon.awscdk.services.ecs.CloudMapNamespaceOptions;
+import software.amazon.awscdk.services.ecs.Cluster;
 import software.amazon.awscdk.services.msk.CfnCluster;
 import software.amazon.awscdk.services.rds.*;
 import software.amazon.awscdk.services.route53.CfnHealthCheck;
 
 public class LocalStack extends Stack {
     private final Vpc vpc;
+    private final Cluster ecsCluster;
 
     private Vpc createVpc() {
         return Vpc.Builder.create(this, "PatientManagementVPC")
@@ -32,7 +35,7 @@ public class LocalStack extends Stack {
                 .removalPolicy(RemovalPolicy.DESTROY)
                 .build();
     }
-    
+
     private CfnHealthCheck cfnHealthCheck(DatabaseInstance db, String id) {
         return CfnHealthCheck.Builder
                 .create(this, id)
@@ -62,16 +65,26 @@ public class LocalStack extends Stack {
                 .build();
     }
 
+    private Cluster createEcsCluster() {
+        return Cluster.Builder
+                .create(this, "PatientManagementCluster")
+                .vpc(vpc)
+                .defaultCloudMapNamespace(CloudMapNamespaceOptions.builder()
+                        .name("patient-management.local") // - Domain space. E.g. auth-service.patient-management.local
+                        .build())
+                .build();
+    }
+
     public LocalStack(final App scope, final String id, final StackProps props) {
         super(scope, id, props);
 
         this.vpc = createVpc();
-
         DatabaseInstance authServiceDb = createDatabase("AuthServiceDb", "auth-service-db");
         DatabaseInstance patientServiceDb = createDatabase("PatientServiceDb", "patient-service-db");
         CfnHealthCheck authDbHealthCheck = cfnHealthCheck(authServiceDb, "AuthServiceDBHealthCheck");
         CfnHealthCheck patientDbHealthCheck = cfnHealthCheck(patientServiceDb, "PatientServiceDBHealthCheck");
         CfnCluster mskCluster = createMskCluster();
+        this.ecsCluster = createEcsCluster();
     }
 
     public static void main(final String[] args) {
